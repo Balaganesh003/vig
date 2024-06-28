@@ -22,19 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function addTask() {
     const taskText = taskInput.value.trim();
     if (taskText !== '') {
-      const li = document.createElement('li');
-      li.textContent = taskText;
-
-      const deleteButton = document.createElement('span');
-      deleteButton.textContent = 'x';
-      deleteButton.className = 'delete';
-      deleteButton.addEventListener('click', () => {
-        taskList.removeChild(li);
-        saveTasks();
-      });
-
-      li.appendChild(deleteButton);
-      taskList.appendChild(li);
+      createTaskElement(taskText);
       taskInput.value = '';
       saveTasks();
     }
@@ -50,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveTasks() {
     const tasks = [];
     taskList.querySelectorAll('li').forEach(task => {
-      tasks.push(task.textContent.slice(0, -1)); // Remove the 'x' from the task text
+      tasks.push(task.querySelector('.task-text').textContent);
     });
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }
@@ -59,19 +47,68 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadTasks() {
     const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     tasks.forEach(taskText => {
-      const li = document.createElement('li');
-      li.textContent = taskText;
-
-      const deleteButton = document.createElement('span');
-      deleteButton.textContent = 'x';
-      deleteButton.className = 'delete';
-      deleteButton.addEventListener('click', () => {
-        taskList.removeChild(li);
-        saveTasks();
-      });
-
-      li.appendChild(deleteButton);
-      taskList.appendChild(li);
+      createTaskElement(taskText);
     });
+  }
+
+  // Create task element
+  function createTaskElement(taskText) {
+    const li = document.createElement('li');
+
+    const span = document.createElement('span');
+    span.textContent = taskText;
+    span.className = 'task-text';
+    li.appendChild(span);
+
+    const editButton = document.createElement('span');
+    editButton.textContent = 'edit';
+    editButton.className = 'edit';
+    editButton.addEventListener('click', () => editTask(span, li));
+    li.appendChild(editButton);
+
+    const deleteButton = document.createElement('span');
+    deleteButton.textContent = 'x';
+    deleteButton.className = 'delete';
+    deleteButton.addEventListener('click', () => {
+      taskList.removeChild(li);
+      saveTasks();
+    });
+    li.appendChild(deleteButton);
+
+    taskList.appendChild(li);
+  }
+
+  // Edit task function
+  function editTask(taskTextElement, taskElement) {
+    const currentText = taskTextElement.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentText;
+    taskElement.insertBefore(input, taskTextElement);
+    taskElement.removeChild(taskTextElement);
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const newText = input.value.trim();
+        if (newText !== '') {
+          taskTextElement.textContent = newText;
+          taskElement.insertBefore(taskTextElement, input);
+          taskElement.removeChild(input);
+          saveTasks();
+        }
+      }
+    });
+
+    input.addEventListener('blur', () => {
+      const newText = input.value.trim();
+      if (newText !== '') {
+        taskTextElement.textContent = newText;
+        taskElement.insertBefore(taskTextElement, input);
+        taskElement.removeChild(input);
+        saveTasks();
+      }
+    });
+
+    input.focus();
   }
 });

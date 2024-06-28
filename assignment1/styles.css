@@ -66,3 +66,13 @@ button:hover {
 #taskList li .delete:hover {
   color: #c82333;
 }
+
+#taskList li .edit {
+  color: #007bff;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+#taskList li .edit:hover {
+  color: #0056b3;
+}
